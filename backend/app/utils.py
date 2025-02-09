@@ -59,37 +59,50 @@ def find_drug_in_plan(plan_name: str, drug_name: str) -> dict:
     plan_details = None
     
     for formulary_dir in plan_path.iterdir():
-        if formulary_dir.is_dir() and formulary_dir.name.endswith('formulary-english'):
-            formulary_file = formulary_dir / f'{formulary_dir.name}.md'
-            plan_details = formulary_dir.name
-            
-            if formulary_file.exists():
-                with open(formulary_file, 'r', encoding='utf-8') as f:
-                    content = f.read().lower()
-                    drug_name_lower = drug_name.lower()
-                    
-                    if drug_name_lower in content:
-                        lines = content.split('\n')
-                        for line in lines:
-                            if drug_name_lower in line:
-                                # Extract tier information
-                                tier = None
-                                if 'tier 1' in line or 'tier: 1' in line:
-                                    tier = 1
-                                elif 'tier 2' in line or 'tier: 2' in line:
-                                    tier = 2
-                                elif 'tier 3' in line or 'tier: 3' in line:
-                                    tier = 3
-                                
-                                # Try to extract dosage information using regex
-                                dosage_match = re.search(r'\d+\s*(?:mg|mcg|ml|g)', line, re.IGNORECASE)
-                                dosage = dosage_match.group(0) if dosage_match else None
-                                
-                                matches.append({
-                                    'tier': tier,
-                                    'notes': clean_text(line.strip()),
-                                    'dosage': dosage
-                                })
+        if formulary_dir.is_dir():
+            # Look for any .md file in the directory
+            md_files = list(formulary_dir.glob('*.md'))
+            if md_files:  # If any .md files found
+                formulary_file = md_files[0]  # Take the first .md file
+                plan_details = formulary_dir.name
+                
+                if formulary_file.exists():
+                    with open(formulary_file, 'r', encoding='utf-8') as f:
+                        content = f.read().lower()
+                        # Replace <br> with spaces and normalize table structure
+                        content = content.replace('<br>', ' ').replace('|', ' | ')
+                        drug_name_lower = drug_name.lower()
+                        
+                        if drug_name_lower in content:
+                            lines = content.split('\n')
+                            for i, line in enumerate(lines):
+                                if drug_name_lower in line:
+                                    # Get context (5 lines before and after)
+                                    start_idx = max(0, i - 5)
+                                    end_idx = min(len(lines), i + 6)
+                                    context = '\n'.join(lines[start_idx:end_idx])
+                                    
+                                    # Extract tier information
+                                    tier = None
+                                    # Look for tier in the context, not just the line
+                                    context_lower = context.lower()
+                                    if 'tier 1' in context_lower or 'tier: 1' in context_lower:
+                                        tier = 1
+                                    elif 'tier 2' in context_lower or 'tier: 2' in context_lower:
+                                        tier = 2
+                                    elif 'tier 3' in context_lower or 'tier: 3' in context_lower:
+                                        tier = 3
+                                    
+                                    # Try to extract dosage information using regex
+                                    dosage_match = re.search(r'\d+\s*(?:mg|mcg|ml|g)', line, re.IGNORECASE)
+                                    dosage = dosage_match.group(0) if dosage_match else None
+                                    
+                                    matches.append({
+                                        'tier': tier,
+                                        'notes': clean_text(line.strip()),
+                                        'dosage': dosage,
+                                        'context': clean_text(context)  # Also include the context in the response
+                                    })
     
     return {
         'found': len(matches) > 0,

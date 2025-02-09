@@ -2,6 +2,7 @@ import Dock from "@/components/dock";
 import LlmOutput from "@/components/llm-output";
 import { Loader2Icon, CircleCheck, CircleX } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
+import axios from 'axios';
 
 interface AgentTaskProps {
     loading: boolean;
@@ -11,6 +12,7 @@ interface AgentTaskProps {
     body: {
         insurancePlan: string;
         drugNames: string[];
+        results?: any[];
     };
 }
 
@@ -41,8 +43,34 @@ function AgentTask({ task }: { task: AgentTaskProps }) {
         </blockquote>
     );
 }
-async function fetchFormularyData() {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+async function fetchFormularyData(insurancePlan: string, drugNames: string[]) {
+    const apiUrl = import.meta.env.VITE_API_URL;
+    const results = [];
+            
+    
+    for (const drug of drugNames) {
+        try {
+            const response = await axios.get(`${apiUrl}/check-formulary`, {
+                params: {
+                    plan: insurancePlan,
+                    drug: drug
+                }
+            });
+            results.push({
+                drug,
+                ...response.data
+            });
+        } catch (error) {
+            console.error(`Error checking formulary for ${drug}:`, error);
+            results.push({
+                drug,
+                error: 'Failed to check coverage'
+            });
+        }
+    }
+    
+    return results;
 }
 
 export default function ResearchPage({
@@ -66,26 +94,41 @@ export default function ResearchPage({
         main();
         async function main() {
             addAgentTask("Searching formulary for drug coverage...");
-            await fetchFormularyData();
-            succeedAgentTask();
+            try {
+                const results = await fetchFormularyData(insurancePlan, drugNames);
+                console.log("RESULTS", results);
+                const hasErrors = results.some(r => r.error);
+                if (hasErrors) {
+                    failAgentTask();
+                } else {
+                    succeedAgentTask();
+                }
+                
+                addAgentTask("Tidying up results...");
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                succeedAgentTask();
 
-            addAgentTask("Tidying up results...");
-            await fetchFormularyData();
-            failAgentTask();
+                setAgentTasks((agentTasks) => [
+                    ...agentTasks,
+                    {
+                        title: "Research Complete!",
+                        final: true,
+                        loading: false,
+                        success: true,
+                        body: {
+                            insurancePlan,
+                            drugNames,
+                            results
+                        },
+                    },
+                ]);
 
-            setAgentTasks((agentTasks) => [
-                ...agentTasks,
-                {
-                    title: "Research Complete!",
-                    final: true,
-                    loading: true,
-                    success: false,
-                    body: body,
-                },
-            ]);
-
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setFinishedTasks(true);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+                setFinishedTasks(true);
+            } catch (error) {
+                console.error('Error in main:', error);
+                failAgentTask();
+            }
         }
         function addAgentTask(title: string) {
             setAgentTasks((agentTasks) => [
