@@ -1,3 +1,4 @@
+import Dock from "@/components/dock";
 import LlmOutput from "@/components/llm-output";
 import { Loader2Icon, CircleCheck, CircleX } from "lucide-react";
 import { useEffect, useState, useRef } from "react";
@@ -113,14 +114,23 @@ export default function ResearchPage({
     return (
         // TODO PUT IT HERE, position absoluted. and hover
         // https://magicui.design/docs/components/iphone-15-pro
-        <div className="min-h-screen p-16">
-            <h3 className="scroll-m-20 text-2xl font-normal tracking-tight">
-                Demystifying {insurancePlan}...
-            </h3>
-            {agentTasks.map((task, index) => (
-                <AgentTask task={task} key={index} />
-            ))}
-            <div className="mt-8">{finishedTasks && <LlmOutput />}</div>
-        </div>
+        <>
+            <div className="min-h-screen p-16 flex">
+                <div className="w-1/4">
+                    <h3 className="scroll-m-20 mt-8 text-2xl font-normal tracking-tight">
+                        Demystifying {insurancePlan}...
+                    </h3>
+                    {agentTasks.map((task, index) => (
+                        <AgentTask task={task} key={index} />
+                    ))}
+                </div>
+                <div className="max-w-[750px] mx-auto">
+                    {finishedTasks && <LlmOutput />}
+                </div>
+            </div>
+            <div className="w-full flex justify-center fixed bottom-6">
+                <Dock />
+            </div>
+        </>
     );
 }
