@@ -16,7 +16,7 @@ We aim for a functional Minimum Viable Product (MVP) at a hackathon scale, focus
 ## 2. Background / Motivation
 
 Many people find it challenging to determine if a given medication is covered by their specific insurance plan—and if so, how much it will cost them. Often, they must:
-1. Search confusing PDF formularies on their insurer’s website.
+1. Search confusing PDF formularies on their insurer's website.
 2. Call the insurance company for coverage details.
 3. Ask a pharmacist to run the prescription to see the cost.
 
@@ -51,13 +51,13 @@ We want to build an **AI-driven** tool that can ease these pain points by centra
 
 ### Out of Scope (for now)
 1. **Full Production Security & Authentication**  
-   - No advanced OAuth or identity systems. (We’ll store minimal user info, if any.)
+   - No advanced OAuth or identity systems. (We'll store minimal user info, if any.)
 2. **Comprehensive Coverage Across All Insurers**  
-   - For the MVP, we’ll focus on a small dataset or a single insurer as a proof-of-concept.
+   - For the MVP, we'll focus on a small dataset or a single insurer as a proof-of-concept.
 3. **Highly Accurate Real-Time Pricing**  
    - We can only approximate or rely on test data. Real-time claims processing is beyond scope.
 4. **Regulatory Compliance**  
-   - We’ll implement basic security measures but won’t fully comply with HIPAA/PHI regulations at this stage.
+   - We'll implement basic security measures but won't fully comply with HIPAA/PHI regulations at this stage.
 
 ---
 
@@ -76,15 +76,15 @@ We want to build an **AI-driven** tool that can ease these pain points by centra
    - **Detail:** Possibly use a simple mapping from a test dataset: e.g., Tier 1: \$10, Tier 2: \$25, Tier 3: \$50.
 
 4. **Alternative Suggestions**  
-   - **Requirement (Optional “Nice-to-have”):** Offer cheaper or generic alternatives.  
+   - **Requirement (Optional "Nice-to-have"):** Offer cheaper or generic alternatives.  
    - **Detail:** If the medication is brand name and a generic exists in the database, suggest it.
 
-5. **AI Explanation / “Thinking”**  
-   - **Requirement (Optional “Nice-to-have”):** Provide a short explanation of how coverage was determined (like a short AI-generated summary).  
-   - **Detail:** Could be a small LLM prompt: “Summarize how coverage was found.”
+5. **AI Explanation / "Thinking"**  
+   - **Requirement (Optional "Nice-to-have"):** Provide a short explanation of how coverage was determined (like a short AI-generated summary).  
+   - **Detail:** Could be a small LLM prompt: "Summarize how coverage was found."
 
 6. **Disclaimers / Next Steps**  
-   - **Requirement:** Show disclaimers about accuracy, “Please verify with official insurer docs,” and contact or pharmacy references if coverage is not definitive.  
+   - **Requirement:** Show disclaimers about accuracy, "Please verify with official insurer docs," and contact or pharmacy references if coverage is not definitive.  
    - **Detail:** This is essential for legal reasons and user trust.
 
 ---
@@ -95,7 +95,7 @@ We want to build an **AI-driven** tool that can ease these pain points by centra
    - Must refresh coverage data frequently (even if manually) to reflect changes in plan documents.
 
 2. **Security & Privacy**  
-   - Though we’re not storing extensive PHI, encrypt any plan or user ID info at rest if stored.  
+   - Though we're not storing extensive PHI, encrypt any plan or user ID info at rest if stored.  
    - Use HTTPS for data transfer.
 
 3. **Low Latency**  
@@ -126,7 +126,7 @@ We want to build an **AI-driven** tool that can ease these pain points by centra
 
 - **Data layer**:  
   - A mock or minimal database (e.g., an in-memory JSON or a lightweight store like SQLite) containing coverage data.  
-  - Possibly a separate file for plan info if we’re faking multiple insurers.
+  - Possibly a separate file for plan info if we're faking multiple insurers.
 
 **(Optional) AI / LLM Integration**  
 - If time allows:
@@ -145,3 +145,39 @@ We want to build an **AI-driven** tool that can ease these pain points by centra
       ]
     }
   ]
+```
+
+## 7. Available Test Data
+
+### Insurance Plans
+The following insurance plans are available for testing the API:
+
+1. **Anthem Gatekeeper X**
+   - Plan ID: `anthem-gatekeeper-x`
+   - Year: 2025
+   - Type: HMO
+
+2. **Healthfirst Bronze Leaf Premier**
+   - Plan ID: `healthfirst-bronze-leaf-premier`
+   - Year: 2025
+   - Type: HMO
+   - Network: NYSOH
+
+3. **Oscar Bronze Classic**
+   - Plan ID: `oscar-bronze-classic`
+   - Year: 2025
+   - Type: EPO
+
+### API Parameters
+When making requests to the coverage check endpoints, use these plan IDs:
+```json
+{
+    "plan": "anthem-gatekeeper-x" | "healthfirst-bronze-leaf-premier" | "oscar-bronze-classic",
+    "drug": "drug_name"
+}
+```
+
+Example API call:
+```
+GET /api/v1/check-formulary?plan=healthfirst-bronze-leaf-premier&drug=Metformin
+```

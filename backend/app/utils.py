@@ -98,6 +98,3 @@ def find_drug_in_plan(plan_name: str, drug_name: str) -> dict:
         'total_matches': len(matches)
     }
 
-# Example usage:
-# result = find_drug_in_plan('healthfirst-bronze-leaf-premier', 'Metformin')
-# print(result)
