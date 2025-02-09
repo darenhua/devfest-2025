@@ -32,28 +32,34 @@ async def get_report():
     data = request.get_json()
     query = data.get("query")
     provider = data.get("provider")
+    report = ""
 
     set_mydocs(provider)
-    researcher = GPTResearcher(
-        query,
-        report_type="research_report",
-        report_source="local",
-    )
-    research_result = await researcher.conduct_research()
-    report = await researcher.write_report()
+    try:
+        researcher = GPTResearcher(
+            query,
+            report_type="research_report",
+            # report_type="outline_report",
+            report_source="local",
+        )
+        research_result = await researcher.conduct_research()
+        report = await researcher.write_report()
+    except:
+        pass
+    reset_mydocs(provider)
+    return {"report": report}
 
     # source_urls = researcher.get_source_urls()
     # research_costs = researcher.get_costs()
     # research_images = researcher.get_research_images()
     # research_sources = researcher.get_research_sources()
 
-    reset_mydocs("anthem")
-    return jsonify(
-        {
-            "report": report,
-            # "source_urls": source_urls,
-            # "research_costs": research_costs,
-            # "num_images": len(research_images),
-            # "num_sources": len(research_sources),
-        }
-    )
+    # return jsonify(
+    #     {
+    #         "report": report,
+    #         # "source_urls": source_urls,
+    #         # "research_costs": research_costs,
+    #         # "num_images": len(research_images),
+    #         # "num_sources": len(research_sources),
+    #     }
+    # )
