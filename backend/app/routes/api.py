@@ -1,17 +1,10 @@
 from flask import Blueprint, request, jsonify
-from flask_cors import CORS
 from gpt_researcher import GPTResearcher
 from app.utils import find_drug_in_plan
 import os
 import asyncio
 
 api_bp = Blueprint("api", __name__)
-CORS(api_bp, resources={
-    r"/*": {
-        "origins": ["http://localhost:5173", "http://127.0.0.1:5173"],
-        "methods": ["GET", "POST", "OPTIONS"]
-    }
-})
 
 
 def set_mydocs(provider):
