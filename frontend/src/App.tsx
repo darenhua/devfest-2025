@@ -1,29 +1,23 @@
-import { FancyMultiSelect } from "./components/fancy-multiselect";
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
-import { Microscope } from "lucide-react";
+import { useState } from "react";
+import InputFormPage from "./pages/InputFormPage";
+import ResearchPage from "./pages/ResearchPage";
 
 export default function App() {
-    return (
-        <div className="flex flex-col min-h-screen justify-center items-center gap-16">
-            <div className="flex flex-col items-center gap-8">
-                <h3 className="scroll-m-20 text-2xl font-normal tracking-tight">
-                    Enter the name of your insurance plan and we'll{" "}
-                    <span className="font-semibold">demystify</span> it.
-                </h3>
-                <Input />
-            </div>
-            <div className="flex flex-col items-center gap-8">
-                <h3 className="scroll-m-20 text-2xl font-normal tracking-tight">
-                    Optionally, enter prescription drugs you want to get
-                    covered.
-                </h3>
-                <FancyMultiSelect />
-            </div>
-            <Button size="lg">
-                <Microscope className="w-4 h-4 mr-2" />
-                Research
-            </Button>
-        </div>
-    );
+    const [startResearching, setStartResearching] = useState(false);
+    const [drugNames, setDrugNames] = useState<string[]>([]);
+    const [insurancePlan, setInsurancePlan] = useState("");
+
+    if (!startResearching) {
+        return (
+            <InputFormPage
+                nextPage={() => setStartResearching(true)}
+                insurancePlan={insurancePlan}
+                setInsurancePlan={setInsurancePlan}
+                drugNames={drugNames}
+                setDrugNames={setDrugNames}
+            />
+        );
+    }
+
+    return <ResearchPage insurancePlan={insurancePlan} drugNames={drugNames} />;
 }

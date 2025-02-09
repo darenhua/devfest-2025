@@ -12,53 +12,41 @@ import {
 } from "@/components/ui/command";
 import { Command as CommandPrimitive } from "cmdk";
 
-type Framework = Record<"value" | "label", string>;
+export type Framework = Record<"value" | "label", string>;
 
-const FRAMEWORKS = [
-    {
-        value: "next.js",
-        label: "Next.js",
-    },
-    {
-        value: "sveltekit",
-        label: "SvelteKit",
-    },
-    {
-        value: "nuxt.js",
-        label: "Nuxt.js",
-    },
-    {
-        value: "remix",
-        label: "Remix",
-    },
-    {
-        value: "astro",
-        label: "Astro",
-    },
-    {
-        value: "wordpress",
-        label: "WordPress",
-    },
-    {
-        value: "express.js",
-        label: "Express.js",
-    },
-    {
-        value: "nest.js",
-        label: "Nest.js",
-    },
-] satisfies Framework[];
+async function fetchDrugNames(fileUrl: string) {
+    // 1) Fetch the CSV file
+    const response = await fetch(fileUrl);
+    const text = await response.text();
 
-export function FancyMultiSelect() {
+    // 2) Split the CSV into rows (by newline)
+    const rows = text.trim().split("\n");
+
+    return rows;
+}
+
+export function FancyMultiSelect({
+    selected,
+    setSelected,
+}: {
+    selected: string[];
+    setSelected: React.Dispatch<React.SetStateAction<string[]>>;
+}) {
+    const [drugNames, setDrugNames] = React.useState<string[]>([]);
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [open, setOpen] = React.useState(false);
-    const [selected, setSelected] = React.useState<Framework[]>([
-        FRAMEWORKS[1],
-    ]);
     const [inputValue, setInputValue] = React.useState("");
 
-    const handleUnselect = React.useCallback((framework: Framework) => {
-        setSelected((prev) => prev.filter((s) => s.value !== framework.value));
+    React.useEffect(() => {
+        (async () => {
+            const fileUrl = "/drug-names.txt";
+            const columnData = await fetchDrugNames(fileUrl);
+            setDrugNames(columnData);
+        })();
+    }, []);
+
+    const handleUnselect = React.useCallback((framework: string) => {
+        setSelected((prev) => prev.filter((s) => s !== framework));
     }, []);
 
     const handleKeyDown = React.useCallback(
@@ -83,11 +71,9 @@ export function FancyMultiSelect() {
         []
     );
 
-    const selectables = FRAMEWORKS.filter(
-        (framework) => !selected.includes(framework)
-    );
-
-    console.log(selectables, selected, inputValue);
+    const selectables = drugNames
+        .slice(0, 50)
+        .filter((framework) => !selected.includes(framework));
 
     return (
         <Command
@@ -98,8 +84,8 @@ export function FancyMultiSelect() {
                 <div className="flex flex-wrap gap-1">
                     {selected.map((framework) => {
                         return (
-                            <Badge key={framework.value} variant="secondary">
-                                {framework.label}
+                            <Badge key={framework} variant="secondary">
+                                {framework}
                                 <button
                                     className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
                                     onKeyDown={(e) => {
@@ -125,7 +111,7 @@ export function FancyMultiSelect() {
                         onValueChange={setInputValue}
                         onBlur={() => setOpen(false)}
                         onFocus={() => setOpen(true)}
-                        placeholder="Select frameworks..."
+                        placeholder="Select prescription drugs..."
                         className="ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground"
                     />
                 </div>
@@ -138,7 +124,7 @@ export function FancyMultiSelect() {
                                 {selectables.map((framework) => {
                                     return (
                                         <CommandItem
-                                            key={framework.value}
+                                            key={framework}
                                             onMouseDown={(e) => {
                                                 e.preventDefault();
                                                 e.stopPropagation();
@@ -152,7 +138,7 @@ export function FancyMultiSelect() {
                                             }}
                                             className={"cursor-pointer"}
                                         >
-                                            {framework.label}
+                                            {framework}
                                         </CommandItem>
                                     );
                                 })}
