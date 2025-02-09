@@ -55,7 +55,7 @@ async function fetchFormularyData(insurancePlan: string, drugNames: string[]) {
                 params: {
                     plan: insurancePlan,
                     drug: drug
-                }
+                },
             });
             results.push({
                 drug,

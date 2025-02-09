@@ -95,8 +95,10 @@ def check_coverage():
     result = find_drug_in_plan(plan_name, drug_name)
     return jsonify(result)
 
-@api_bp.route('/check-formulary', methods=['GET'])
+@api_bp.route('/check-formulary', methods=['GET', 'OPTIONS'])
 def check_formulary():
+    if request.method == 'OPTIONS':
+        return jsonify({'success': True}), 200
     # Get parameters from query string
     plan_name = request.args.get('plan')
     drug_name = request.args.get('drug')
