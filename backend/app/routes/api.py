@@ -32,6 +32,7 @@ def reset_mydocs(provider):
 @api_bp.route("/report", methods=["POST"])
 def get_report():
     try:
+        print("Starting report generation...")
         data = request.get_json()
         print("Received data:", data)
         
@@ -72,10 +73,13 @@ def get_report():
             report_type="research_report",
             report_source="local",
         )
+        print("Starting research...")
         research_result = asyncio.run(researcher.conduct_research())
+        print("Research completed, writing report...")
         report = asyncio.run(researcher.write_report())
+        print("Report generated successfully")
     except Exception as e:
-        print("Error in get_report:", str(e))
+        print("Fatal error in get_report:", str(e))
         return jsonify({"error": str(e)}), 500
     finally:
         reset_mydocs(provider)
