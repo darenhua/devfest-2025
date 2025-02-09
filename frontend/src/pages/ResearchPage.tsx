@@ -83,6 +83,8 @@ export default function ResearchPage({
     const [agentTasks, setAgentTasks] = useState<AgentTaskProps[]>([]);
     const [finishedTasks, setFinishedTasks] = useState(false);
     const hasRunOnce = useRef(false);
+    const [report, setReport] = useState<string | null>(null);
+
     useEffect(() => {
         if (hasRunOnce.current) return;
         hasRunOnce.current = true;
@@ -125,6 +127,13 @@ export default function ResearchPage({
 
                 await new Promise((resolve) => setTimeout(resolve, 1000));
                 setFinishedTasks(true);
+
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const response = await axios.post(`${apiUrl}/report`, {
+                    provider: insurancePlan,
+                    drug_results: results
+                });
+                setReport(response.data.report);
             } catch (error) {
                 console.error('Error in main:', error);
                 failAgentTask();
@@ -168,7 +177,7 @@ export default function ResearchPage({
                     ))}
                 </div>
                 <div className="max-w-[750px] mx-auto">
-                    {finishedTasks && <LlmOutput />}
+                    {finishedTasks && report && <LlmOutput report={report} />}
                 </div>
             </div>
             <div className="w-full flex justify-center fixed bottom-6">
